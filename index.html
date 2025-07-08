@@ -4,21 +4,29 @@
 <head>
     <meta charset="UTF-8">
     <title>Tes Kraepelin Sederhana</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, sans-serif;
             background: #f2f2f2;
             text-align: center;
             padding: 30px;
+            font-size: 16px;
         }
 
         .container {
             background: white;
-            max-width: 400px;
-            margin: auto;
+            max-width: 100%;
+            width: 100%;
             padding: 20px;
+            box-sizing: border-box;
+            margin: auto;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
@@ -28,7 +36,7 @@
         }
 
         #numberDisplay {
-            font-size: 30px;
+            font-size: 36px;
             margin: 20px 0;
         }
 
@@ -37,9 +45,9 @@
         }
 
         #answer {
-            font-size: 24px;
+            font-size: 28px;
+            width: 80px;
             text-align: center;
-            width: 60px;
         }
 
         #startBtn,
@@ -57,6 +65,23 @@
         .result {
             margin-top: 15px;
             font-size: 18px;
+        }
+
+        @media (max-width: 480px) {
+            #numberDisplay {
+                font-size: 28px;
+            }
+
+            #answer {
+                width: 60px;
+                font-size: 24px;
+            }
+
+            #startBtn,
+            #restartBtn {
+                font-size: 18px;
+                padding: 12px 24px;
+            }
         }
     </style>
 </head>
@@ -84,7 +109,7 @@
             <div id="timer">Waktu: 60</div>
             <div id="numberDisplay"></div>
             <div id="inputArea">
-                <input type="number" id="answer" inputmode="numeric" pattern="[0-9]*">
+                <input type="text" id="answer" maxlength="1" autofocus>
             </div>
             <div class="result" id="feedback"></div>
         </div>
@@ -95,7 +120,8 @@
             <p>Salah: <span id="wrongCount">0</span></p>
             <p>Total: <span id="totalCount">0</span></p>
             <button id="restartBtn">Mulai Lagi</button>
-            <canvas id="grafikHasil" width="300" height="200" style="margin-top: 20px;"></canvas>
+            <canvas id="grafikHasil" style="width: 100%; max-width: 100%; height: auto;"></canvas>
+
 
         </div>
     </div>
@@ -245,20 +271,12 @@
         };
 
         answerInput.addEventListener('input', (e) => {
-    const val = e.target.value.trim();
-    if (/^[0-9]$/.test(val)) {
-        processAnswer(val);
-        e.target.value = ''; // reset input
-    }
-});
-function showNext() {
-    if (index < angka.length - 1) {
-        numberDisplay.textContent = `${angka[index]} + ${angka[index + 1]} = ?`;
-        setTimeout(() => answerInput.focus(), 100); // kasih delay agar bisa fokus di mobile
-    } else {
-        endTest();
-    }
-}
+            const val = e.target.value.trim();
+            if (val.length === 1 && /^[0-9]$/.test(val)) {
+                processAnswer(val);
+            }
+        });
+
     </script>
 
 
