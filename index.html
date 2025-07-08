@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Tes Kraepelin Sederhana</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .container {
+            background: white;
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+        }
+
+        #numberDisplay {
+            font-size: 30px;
+            margin: 20px 0;
+        }
+
+        #inputArea {
+            margin-top: 10px;
+        }
+
+        #answer {
+            font-size: 24px;
+            text-align: center;
+            width: 60px;
+        }
+
+        #startBtn,
+        #restartBtn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+
+        #timer {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        .result {
+            margin-top: 15px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Tes Kraepelin</h1>
+        <div id="intro">
+            <p>Jumlahkan dua angka secara cepat. Masukkan hanya angka terakhir (digit satuan).</p>
+
+            <div style="display: flex; gap: 10px; align-items: center; justify-content: center; margin-top: 8px;">
+                <label for="durationSelect">Pilih Durasi Tes:</label>
+                <select id="durationSelect" name="durationSelect" aria-label="Pilih durasi tes">
+                    <option value="30">30 detik</option>
+                    <option value="60" selected>60 detik</option>
+                    <option value="90">90 detik</option>
+                </select>
+            </div>
+            <button id="startBtn" type="button">Mulai Tes</button>
+        </div>
+
+
+
+        <div id="testArea" style="display: none;">
+            <div id="timer">Waktu: 60</div>
+            <div id="numberDisplay"></div>
+            <div id="inputArea">
+                <input type="text" id="answer" maxlength="1" autofocus>
+            </div>
+            <div class="result" id="feedback"></div>
+        </div>
+
+        <div id="resultArea" style="display: none;">
+            <h3>Hasil Tes</h3>
+            <p>Benar: <span id="correctCount">0</span></p>
+            <p>Salah: <span id="wrongCount">0</span></p>
+            <p>Total: <span id="totalCount">0</span></p>
+            <button id="restartBtn">Mulai Lagi</button>
+            <canvas id="grafikHasil" width="300" height="200" style="margin-top: 20px;"></canvas>
+
+        </div>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById('startBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const testArea = document.getElementById('testArea');
+        const resultArea = document.getElementById('resultArea');
+        const intro = document.getElementById('intro');
+        const timerDisplay = document.getElementById('timer');
+        const numberDisplay = document.getElementById('numberDisplay');
+        const answerInput = document.getElementById('answer');
+        const feedback = document.getElementById('feedback');
+        const correctCountSpan = document.getElementById('correctCount');
+        const wrongCountSpan = document.getElementById('wrongCount');
+        const totalCountSpan = document.getElementById('totalCount');
+        const durationSelect = document.getElementById('durationSelect');
+
+        let angka = [];
+        let index = 0;
+        let score = 0;
+        let total = 0;
+        let timer = 60;
+        let interval;
+        let intervalData = [];
+        let intervalTime = 10; // setiap 10 detik
+        let timeElapsed = 0;
+
+        function generateNumbers() {
+            angka = [];
+            for (let i = 0; i < 200; i++) {
+                angka.push(Math.floor(Math.random() * 10));
+            }
+        }
+
+        function showNext() {
+            if (index < angka.length - 1) {
+                numberDisplay.textContent = `${angka[index]} + ${angka[index + 1]} = ?`;
+                answerInput.value = '';
+                answerInput.focus();
+            } else {
+                endTest();
+            }
+        }
+
+        function processAnswer(val) {
+            const correct = (angka[index] + angka[index + 1]) % 10;
+            total++;
+            if (parseInt(val) === correct) {
+                score++;
+                feedback.textContent = "✅ Benar";
+            } else {
+                feedback.textContent = `❌ Salah, seharusnya ${correct}`;
+            }
+            index++;
+            if (index < angka.length - 1) {
+                setTimeout(() => {
+                    feedback.textContent = '';
+                    showNext();
+                }, 400);
+            } else {
+                endTest();
+            }
+        }
+
+        function startTest() {
+            const selectedDuration = parseInt(durationSelect.value); // Ambil durasi dari pilihan
+            timer = selectedDuration;
+            index = 0;
+            score = 0;
+            total = 0;
+            timeElapsed = 0;
+            intervalData = [];
+
+            intro.style.display = "none";
+            resultArea.style.display = "none";
+            testArea.style.display = "block";
+
+            generateNumbers();
+            showNext();
+            timerDisplay.textContent = `Waktu: ${timer}`;
+
+            clearInterval(interval);
+            interval = setInterval(() => {
+                timer--;
+                timeElapsed++;
+
+                if (timeElapsed % intervalTime === 0) {
+                    intervalData.push({ waktu: selectedDuration - timer, jumlah: total });
+                    total = 0;
+                }
+
+                timerDisplay.textContent = `Waktu: ${timer}`;
+                if (timer <= 0) {
+                    clearInterval(interval);
+                    endTest();
+                }
+            }, 1000);
+        }
+
+        function endTest() {
+            clearInterval(interval);
+            testArea.style.display = "none";
+            resultArea.style.display = "block";
+
+            const totalJawaban = intervalData.reduce((sum, d) => sum + d.jumlah, 0);
+            correctCountSpan.textContent = score;
+            wrongCountSpan.textContent = totalJawaban - score;
+            totalCountSpan.textContent = totalJawaban;
+
+            const ctx = document.getElementById('grafikHasil').getContext('2d');
+            const labels = intervalData.map(d => `${d.waktu}s`);
+            const data = intervalData.map(d => d.jumlah);
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Jawaban per 10 Detik',
+                        data,
+                        borderColor: '#2ecc71',
+                        backgroundColor: 'rgba(46,204,113,0.2)',
+                        tension: 0.3,
+                        pointRadius: 3
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Jumlah Jawaban' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Waktu (detik)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        startBtn.onclick = startTest;
+        restartBtn.onclick = () => {
+            intro.style.display = "block";
+            resultArea.style.display = "none";
+        };
+
+        answerInput.addEventListener('input', (e) => {
+            const val = e.target.value.trim();
+            if (val.length === 1 && /^[0-9]$/.test(val)) {
+                processAnswer(val);
+            }
+        });
+
+    </script>
+
+
+</body>
+
+</html>
