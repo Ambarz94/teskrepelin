@@ -84,7 +84,7 @@
             <div id="timer">Waktu: 60</div>
             <div id="numberDisplay"></div>
             <div id="inputArea">
-                <input type="text" id="answer" maxlength="1" autofocus>
+                <input type="number" id="answer" inputmode="numeric" pattern="[0-9]*">
             </div>
             <div class="result" id="feedback"></div>
         </div>
@@ -245,12 +245,20 @@
         };
 
         answerInput.addEventListener('input', (e) => {
-            const val = e.target.value.trim();
-            if (val.length === 1 && /^[0-9]$/.test(val)) {
-                processAnswer(val);
-            }
-        });
-
+    const val = e.target.value.trim();
+    if (/^[0-9]$/.test(val)) {
+        processAnswer(val);
+        e.target.value = ''; // reset input
+    }
+});
+function showNext() {
+    if (index < angka.length - 1) {
+        numberDisplay.textContent = `${angka[index]} + ${angka[index + 1]} = ?`;
+        setTimeout(() => answerInput.focus(), 100); // kasih delay agar bisa fokus di mobile
+    } else {
+        endTest();
+    }
+}
     </script>
 
 
